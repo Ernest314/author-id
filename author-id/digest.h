@@ -37,9 +37,10 @@ struct word_compare {
 
 string to_lower_case(string input);	// Converts A-Z and { Á,É,Í,Ó,Ú,Ñ }
 void print_data_size(ifstream& stream);
+void add_word_to_file(string filename, string word, int freq);
 void update_word(vector<Word>& list, string word);
 void add_words_from_line(vector<Word>& list, string line, std::regex regex);
-void update_word_freq(fstream& stream, string filename, string word, int freq);
+void update_word_freq(string filename, string word, int freq);
 void combine_list_file(vector<Word>& list, fstream& stream, string filename);
 void combine_list_file(	vector<Word>& list,
 						fstream& stream,

@@ -24,6 +24,7 @@ void digest_input(string filename)
 		add_words_from_line(word_list, raw_input, regex_word);
 		// TODO: Make constants settable via command-line options (i.e. 10000, 3000)
 		if (word_list.size() > 10000) {
+			cout << "Flushing buffer..." << endl << endl;
 			combine_list_file(	word_list,
 								file_author,
 								filename_author,
@@ -32,15 +33,14 @@ void digest_input(string filename)
 		}
 	}
 
-	// Sort
+	// Final write:
+	cout << "Writing final file..." << endl << endl;
 	std::sort(word_list.begin(), word_list.end(), word_compare());
+	combine_list_file(word_list, file_author, filename_author);
 	file_author.close();
-	file_author.open(filename_author);
-	file_author << "WORD,FREQ" << endl;
-	for (auto itr = word_list.begin(); itr != word_list.end(); ++itr) {
-		file_author << itr->text << "," << itr->freq << endl;
-	}
-	file_author.close();
+
+	// TODO: Sort
+
 	cout << endl << "Done!" << endl;
 }
 
@@ -105,6 +105,13 @@ void print_data_size(ifstream& stream)
 	cout << "(Approximately " << word_num << " words.)" << endl << endl;
 }
 
+void add_word_to_file(string filename, string word, int freq)
+{
+	ofstream file_updated(filename, ios::app);
+	file_updated << word << "," << freq << endl;
+	file_updated.close();
+}
+
 void update_word(vector<Word>& list, string word)
 {
 	// If the word is already in memory, increment its count.
@@ -133,20 +140,22 @@ void add_words_from_line(vector<Word>& list, string line, std::regex regex)
 	}
 }
 
-void update_word_freq(fstream& stream, string filename, string word, int freq)
+void update_word_freq(string filename, string word, int freq)
 {
 	// To replace a line we must write an entirely new file,
 	// then rename it and replace the old one.
 	string filename_temp = "Authors/tmp.csv";
 	ofstream file_updated(filename_temp);
-	stream.seekg(0, ios::beg);
+	ifstream file_read(filename);
 
 	string buffer; // swap buffer
-	while (getline(stream, buffer, ',')) {
+	getline(file_read, buffer); // First line should be "WORD,FREQ"
+	file_updated << buffer << endl;
+	while (getline(file_read, buffer, ',')) {
 		file_updated << buffer << ",";
+		getline(file_read, buffer); // continues getline until '\n', i.e. gets freq
 		// Now write the correct freq:
 		if (buffer != word) {
-			getline(stream, buffer); // continues getline until '\n', i.e. gets freq
 			file_updated << buffer;
 		} else {
 			file_updated << freq;
@@ -158,7 +167,6 @@ void update_word_freq(fstream& stream, string filename, string word, int freq)
 	// Delete old file, rename new one, and open fstream for I/O again.
 	remove(filename.c_str());
 	rename(filename_temp.c_str(), filename.c_str());
-	stream.open(filename, ios::in | ios::out);
 }
 
 void combine_list_file(vector<Word>& list, fstream& stream, string filename)
@@ -172,27 +180,28 @@ void combine_list_file(	vector<Word>& list,
 						vector<Word>::iterator itr_beg,
 						vector<Word>::iterator itr_end)
 {
-	if (list.size() > 10000) {
-		std::sort(list.begin(), list.end(), word_compare());
-		for (auto itr = itr_beg; itr != itr_end; ++itr) {
-			stream.seekg(0, ios::beg);
-			string buffer; // to dump the first line into, for converting string to char, and rewriting file
-			getline(stream, buffer);
+	std::sort(list.begin(), list.end(), word_compare());
+	for (auto itr = itr_beg; itr != itr_end; ++itr) {
+		stream.seekg(0, ios::beg);
+		string buffer; // to dump the first line into, for converting string to char, and rewriting file
+		getline(stream, buffer);
 
-			bool wordExists = false;
-			string word_existing;
-			while (getline(stream, word_existing, ',')) {
-				if (itr->text == word_existing) {
-					wordExists = true;
-					int freq_new = std::stoi(buffer) + itr->freq;
-					update_word_freq(stream, filename, word_existing, freq_new);
-					break;
-				}
-			}
-			if (!wordExists) {
-				stream.seekp(0, std::ios::end);
-				stream << itr->text << "," << itr->freq << endl;
+		bool wordExists = false;
+		string word_existing;
+		while (getline(stream, word_existing, ',')) {
+			getline(stream, buffer);
+			if (itr->text == word_existing) {
+				wordExists = true;
+				int freq_new = std::stoi(buffer) + itr->freq;
+				update_word_freq(filename, word_existing, freq_new);
+				break;
 			}
 		}
+		if (!wordExists) {
+			stream.close();
+			add_word_to_file(filename, itr->text, itr->freq);
+			stream.open(filename, ios::in | ios::out);
+		}
 	}
+	list.erase(itr_beg, itr_end);
 }
