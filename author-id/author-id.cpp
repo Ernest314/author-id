@@ -13,6 +13,7 @@ enum RunMode {
 
 	MODE_ABOUT	= 0,
 	MODE_HELP,
+	MODE_LIST,
 	MODE_NUM
 };
 
@@ -77,7 +78,22 @@ int main(int argc, char* argv[])
 					"\tDescription of this program." << endl << endl;
 				cout << "-?, -h, --help\n" <<
 					"\tShows these help instructions." << endl << endl;
+				cout << "-l, --list\n" <<
+					"\tLists all authors for which there is data." << endl << endl;
 				cout << endl;
+				break;
+			case MODE_LIST :
+				cout << "All authors for which data has been collected:" << endl << endl;
+				// NOTE: Enclosed within a block to prevent scoping issues with switch statement.
+				{
+					string filename_author_key = "Authors/KEY.txt";
+					std::ifstream author_list(filename_author_key);
+					string disp_author;
+					while (getline(author_list, disp_author)) {
+						cout << disp_author << endl;
+					}
+					cout << endl;
+				}
 				break;
 			default :
 				break;
@@ -104,9 +120,12 @@ RunMode hash_string(std::string input)
 				case 'a' :
 					output = MODE_ABOUT;
 					break;
-				case '?':
+				case '?' :
 				case 'h' :
 					output = MODE_HELP;
+					break;
+				case 'l' :
+					output = MODE_LIST;
 					break;
 				default :
 					output = ERROR_BAD_ARG;
@@ -122,6 +141,8 @@ RunMode hash_string(std::string input)
 				output = MODE_ABOUT;
 			} else if (converter == "help") {
 				output = MODE_HELP;
+			} else if (converter == "list") {
+				output = MODE_LIST;
 			} else {
 				output = ERROR_BAD_ARG;
 			}
