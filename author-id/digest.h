@@ -1,9 +1,12 @@
 #ifndef DIGEST_H
 #define DIGEST_H
 
+#include <vector>
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <regex>
 
 using std::cout;
 using std::endl;
