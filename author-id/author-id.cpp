@@ -4,25 +4,29 @@
 #include <iostream>
 #include <fstream>
 
+#include "digest.h"
+
+using std::cout;
+using std::endl;
+using std::cin;
+using std::string;
+
 enum RunMode {
 	ERROR_UNKNOWN	= -1,
 	ERROR_NO_ARG	= -2,
 	ERROR_BAD_ARG	= -3,
 	ERROR_NO_PARAM	= -4,
 	ERROR_BAD_PARAM	= -5,
+	ERROR_NOT_TXT	= -6,
 
 	MODE_ABOUT	= 0,
 	MODE_HELP,
 	MODE_LIST,
+	MODE_DIGEST,
 	MODE_NUM
 };
 
-RunMode hash_string(std::string input);
-
-using std::cout;
-using std::endl;
-using std::cin;
-using std::string;
+RunMode hash_string(string input);
 
 int main(int argc, char* argv[])
 {
@@ -58,12 +62,16 @@ int main(int argc, char* argv[])
 				cout << "ERROR: Argument not recognized." <<
 					" Type \"-h\" for a list of accepted arguments." << endl;
 				break;
-			case ERROR_NO_PARAM:
+			case ERROR_NO_PARAM :
 				cout << "ERROR: No parameter(s) specified." <<
 					" Type \"-h\" for a list of accepted arguments." << endl;
 				break;
-			case ERROR_BAD_PARAM:
+			case ERROR_BAD_PARAM :
 				cout << "ERROR: Parameter(s) not recognized." <<
+					" Type \"-h\" for a list of accepted arguments." << endl;
+				break;
+			case ERROR_NOT_TXT:
+				cout << "ERROR: Parameter(s) is not a \".txt\" file." <<
 					" Type \"-h\" for a list of accepted arguments." << endl;
 				break;
 			case MODE_ABOUT :
@@ -80,6 +88,8 @@ int main(int argc, char* argv[])
 					"\tShows these help instructions." << endl << endl;
 				cout << "-l, --list\n" <<
 					"\tLists all authors for which there is data." << endl << endl;
+				cout << "-d, --digest filename.txt\n" <<
+					"\tDigests the specified file (in the \"Texts\" directory)." << endl << endl;
 				cout << endl;
 				break;
 			case MODE_LIST :
@@ -95,6 +105,29 @@ int main(int argc, char* argv[])
 					cout << endl;
 				}
 				break;
+			case MODE_DIGEST :
+				erase_num = 2;
+				// WARNING: If there aren't enough parameters, breaks out of switch immediately.
+				// Also breaks out of switch immediately if filename extension is not ".txt".
+				if (args.size() < 2) {
+					// then size() must be 1, since it is also >0
+					erase_num = 1;
+					args.push_back("--NO_PARAM");
+					break;
+				} else {
+					string filename_digest_input = args[1];
+					string buf(	filename_digest_input,
+								filename_digest_input.size() - 4,
+								filename_digest_input.size()	);
+					if (buf != ".txt") {
+						erase_num = 1;
+						args[1] = "--NOT_TXT";
+						break;
+					} else {
+						digest_input(filename_digest_input);
+					}
+				}
+				break;
 			default :
 				break;
 		}
@@ -105,7 +138,7 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-RunMode hash_string(std::string input)
+RunMode hash_string(string input)
 {
 	RunMode output = ERROR_UNKNOWN;
 	int input_size = input.size();
@@ -127,6 +160,9 @@ RunMode hash_string(std::string input)
 				case 'l' :
 					output = MODE_LIST;
 					break;
+				case 'd':
+					output = MODE_DIGEST;
+					break;
 				default :
 					output = ERROR_BAD_ARG;
 					break;
@@ -143,8 +179,18 @@ RunMode hash_string(std::string input)
 				output = MODE_HELP;
 			} else if (converter == "list") {
 				output = MODE_LIST;
+			} else if (converter == "digest") {
+				output = MODE_DIGEST;
 			} else {
-				output = ERROR_BAD_ARG;
+				if (converter == "NO_PARAM") {
+					output = ERROR_NO_PARAM;
+				} else if (converter == "BAD_PARAM") {
+					output = ERROR_BAD_PARAM;
+				} else if (converter == "NOT_TXT") {
+					output = ERROR_NOT_TXT;
+				} else {
+					output = ERROR_BAD_ARG;
+				}
 			}
 		}
 	}
