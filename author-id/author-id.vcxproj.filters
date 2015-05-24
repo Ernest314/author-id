@@ -24,7 +24,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Author.h">
+    <ClInclude Include="digest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,7 +35,7 @@
     <ClCompile Include="author-id.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Author.cpp">
+    <ClCompile Include="digest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
