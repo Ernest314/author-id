@@ -4,6 +4,20 @@
 #include <iostream>
 #include <fstream>
 
+enum RunMode {
+	ERROR_UNKNOWN	= -1,
+	ERROR_NO_ARG	= -2,
+	ERROR_BAD_ARG	= -3,
+	ERROR_NO_PARAM	= -4,
+	ERROR_BAD_PARAM	= -5,
+
+	MODE_ABOUT	= 0,
+	MODE_HELP,
+	MODE_NUM
+};
+
+RunMode hash_string(std::string input);
+
 using std::cout;
 using std::endl;
 using std::cin;
@@ -11,11 +25,11 @@ using std::string;
 
 int main(int argc, char* argv[])
 {
-	cout << "  AUTHOR-ID PROGRAM" << endl;
-	cout << "    Ernest Gu & Nathan Yang" << endl << endl;
+	cout << endl;
+	cout << "==== AUTHOR-ID PROGRAM: Ernest Gu & Nathan Yang ====" << endl << endl;
 	if (argc < 2) {
 		cout << "You must enter at least one (1) argument.\n" <<
-			"Type -h for a list of accepted arguments.\n\n";
+			"Type \"-h\" for a list of accepted arguments.\n\n";
 		// WARNING: SKIPS TO END
 		return 0;
 	}
@@ -30,27 +44,79 @@ int main(int argc, char* argv[])
 
 	// Loop through all the arguments supplied.
 	while (args.size() > 0) {
-		string mode = args[0];
 		int erase_num = 1; // number of params per argument +1
-		switch (mode.c_str()[1]) {
-			// mode.c_str()[0] should contain a hyphen ('-')
-			case 'a' :	// "About"
-				cout << "This program is for our final AP Stats project." << endl <<
-					"It creates statistics for a given author from sample" << endl <<
-					"texts, and will try to infer the author of an unknown" << endl <<
-					"input text." << endl << endl;
+		switch (hash_string(args[0])) {
+			case ERROR_UNKNOWN :
+				cout << "ERROR: Failed to parse command." << endl;
 				break;
-			case 'h' :	// "Help"
-				cout << "Below is a list of accepted commands:\n";
+			case ERROR_NO_ARG :
+				cout << "ERROR: No argument specified." <<
+					" Type \"-h\" for a list of accepted arguments." << endl;
+				break;
+			case ERROR_BAD_ARG :
+				cout << "ERROR: Argument not recognized." <<
+					" Type \"-h\" for a list of accepted arguments." << endl;
+				break;
+			case MODE_ABOUT :
+				cout << "This program is for our AP Statistics final project." << endl << endl <<
+					"It creates statistics for a given author from a database of sample" << endl <<
+					"texts, and will try to infer the author of an unknown text from" << endl <<
+					"those pre-calculated statistics." << endl << endl;
+				break;
+			case MODE_HELP :
+				cout << "Below is a list of accepted commands:" << endl << endl;
+				cout << "-a, --about\n" <<
+					"\tDescription of this program." << endl << endl;
+				cout << "-h, --help\n" <<
+					"\tShows these help instructions." << endl << endl;
+				cout << endl;
 				break;
 			default :
 				break;
 		}
-		mode.erase(mode.begin(), mode.begin() + erase_num);
+		args.erase(args.begin(), args.begin() + erase_num);
 	}
 
-	int x;
-	cin >> x;
-
+	cout << endl;
 	return 0;
+}
+
+RunMode hash_string(std::string input)
+{
+	RunMode output = ERROR_UNKNOWN;
+	int input_size = input.size();
+
+	if (input_size == 0) {
+		output = ERROR_NO_ARG;
+	} else if (input_size == 2) {
+		if (input[0] != '-') {
+			output = ERROR_BAD_ARG;
+		} else {
+			switch (input[1]) {
+				case 'a' :
+					output = MODE_ABOUT;
+					break;
+				case 'h' :
+					output = MODE_HELP;
+					break;
+				default :
+					output = ERROR_BAD_ARG;
+					break;
+			}
+		}
+	} else {
+		if (input[0] != '0' || input[1] != '0') {
+			output = ERROR_BAD_ARG;
+		} else {
+			std::string converter(input, 2, input_size);
+			if (converter == "about") {
+				output = MODE_ABOUT;
+			} else if (converter == "help") {
+				output = MODE_HELP;
+			} else {
+				output = ERROR_BAD_ARG;
+			}
+		}
+	}
+	return output;
 }
