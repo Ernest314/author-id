@@ -105,7 +105,7 @@ RunMode hash_string(std::string input)
 			}
 		}
 	} else {
-		if (input[0] != '0' || input[1] != '0') {
+		if (input[0] != '-' || input[1] != '-') {
 			output = ERROR_BAD_ARG;
 		} else {
 			std::string converter(input, 2, input_size);
