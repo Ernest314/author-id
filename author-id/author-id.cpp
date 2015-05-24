@@ -57,6 +57,14 @@ int main(int argc, char* argv[])
 				cout << "ERROR: Argument not recognized." <<
 					" Type \"-h\" for a list of accepted arguments." << endl;
 				break;
+			case ERROR_NO_PARAM:
+				cout << "ERROR: No parameter(s) specified." <<
+					" Type \"-h\" for a list of accepted arguments." << endl;
+				break;
+			case ERROR_BAD_PARAM:
+				cout << "ERROR: Parameter(s) not recognized." <<
+					" Type \"-h\" for a list of accepted arguments." << endl;
+				break;
 			case MODE_ABOUT :
 				cout << "This program is for our AP Statistics final project." << endl << endl <<
 					"It creates statistics for a given author from a database of sample" << endl <<
@@ -67,7 +75,7 @@ int main(int argc, char* argv[])
 				cout << "Below is a list of accepted commands:" << endl << endl;
 				cout << "-a, --about\n" <<
 					"\tDescription of this program." << endl << endl;
-				cout << "-h, --help\n" <<
+				cout << "-?, -h, --help\n" <<
 					"\tShows these help instructions." << endl << endl;
 				cout << endl;
 				break;
@@ -96,6 +104,7 @@ RunMode hash_string(std::string input)
 				case 'a' :
 					output = MODE_ABOUT;
 					break;
+				case '?':
 				case 'h' :
 					output = MODE_HELP;
 					break;
