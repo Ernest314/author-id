@@ -1,0 +1,33 @@
+Jane Austen
+L. Frank Baum
+Anne Bronte
+Charlotte Bronte
+Emily Bronte
+Frances Hodgson Burnett
+Lewis Carroll
+Joseph Conrad
+Stephen Crane
+James Fenimore Cooper
+Charles Darwin
+Daniel Defoe
+Charles Dickens
+Arthur Conan Doyle
+F. Scott Fitzgerald
+Thomas Hardy
+Nathaniel Hawthorne
+James Joyce
+Rudyard Kipling
+Jack London
+Herman Melville
+Edgar Allan Poe
+Walter Scott
+William Shakespeare
+Mary Shelley
+Robert Louis Stevenson
+Bram Stoker
+Jonathan Swift
+Mark Twain
+Jules Verne
+H.G. Wells
+Edith Wharton
+Oscar Wilde
