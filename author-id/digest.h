@@ -40,6 +40,12 @@ void print_data_size(ifstream& stream);
 void update_word(vector<Word>& list, string word);
 void add_words_from_line(vector<Word>& list, string line, std::regex regex);
 void update_word_freq(fstream& stream, string filename, string word, int freq);
+void combine_list_file(vector<Word>& list, fstream& stream, string filename);
+void combine_list_file(	vector<Word>& list,
+						fstream& stream,
+						string filename,
+						vector<Word>::iterator itr_beg,
+						vector<Word>::iterator itr_end	);
 
 void digest_input(string filename);
 
