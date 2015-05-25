@@ -31,7 +31,7 @@ struct Word {
 };
 struct word_compare {
 	inline bool operator()(Word a, Word b) {
-		return (a.freq < b.freq);
+		return (a.freq > b.freq);
 	}
 };
 
