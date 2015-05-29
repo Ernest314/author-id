@@ -13,9 +13,15 @@ void digest_input(string filename)
 	string author_name;
 	getline(file_text, author_name);
 	string filename_author = "Authors/" + author_name + ".csv";
-	fstream file_author(filename_author, ios::in | ios::out);
+	int pos_filename = (filename.end() - 4) - filename.begin();
+	string filename_summary = filename;
+	filename_summary.insert(pos_filename, "-SUM");
+	fstream file_summary(filename_summary, ios::in | ios::out);
+	string filename_words(filename.begin(), filename.end()-4);
+	filename_words += "-FREQ.csv";
+	fstream file_words(filename_words, ios::in | ios::out);
 	cout << "Author: " << author_name << endl << endl;
-	cout << "Output: " << author_name + ".csv" << endl << endl;
+	cout << "Output: " << filename + "-SUM.txt" << endl << endl;
 
 	vector<Word> word_list;	// Working list of words held in memory.
 	string raw_input;
@@ -26,7 +32,7 @@ void digest_input(string filename)
 		if (word_list.size() > 10000) {
 			cout << "Flushing buffer..." << endl << endl;
 			combine_list_file(	word_list,
-								file_author,
+								file_words,
 								filename_author,
 								word_list.begin() + 3000,
 								word_list.end()		);
@@ -34,10 +40,10 @@ void digest_input(string filename)
 	}
 
 	// Final write:
-	cout << "Writing final file..." << endl << endl;
+	cout << "Writing frequency file..." << endl << endl;
 	std::sort(word_list.begin(), word_list.end(), word_compare());
-	combine_list_file(word_list, file_author, filename_author);
-	file_author.close();
+	combine_list_file(word_list, file_words, filename_author);
+	file_words.close();
 
 	// TODO: Sort
 

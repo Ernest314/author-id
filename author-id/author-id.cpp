@@ -23,6 +23,7 @@ enum RunMode {
 	MODE_HELP,
 	MODE_LIST,
 	MODE_DIGEST,
+	MODE_COMPILE,
 	MODE_NUM
 };
 
@@ -90,6 +91,9 @@ int main(int argc, char* argv[])
 					"\tLists all authors for which there is data." << endl << endl;
 				cout << "-d, --digest filename.txt\n" <<
 					"\tDigests the specified file (in the \"Texts\" directory)." << endl << endl;
+				cout << "-c, --compile file_A.txt [file_B.txt] [...]\n" <<
+					"\tCompiles the listed files into their author's file. The files\n" <<
+					"\tmust be in the \"Texts\" directory." << endl << endl;
 				cout << endl;
 				break;
 			case MODE_LIST :
@@ -128,6 +132,8 @@ int main(int argc, char* argv[])
 					}
 				}
 				break;
+			case MODE_COMPILE :
+				break;
 			default :
 				break;
 		}
@@ -163,6 +169,9 @@ RunMode hash_string(string input)
 				case 'd':
 					output = MODE_DIGEST;
 					break;
+				case 'c' :
+					output = MODE_COMPILE;
+					break;
 				default :
 					output = ERROR_BAD_ARG;
 					break;
@@ -179,8 +188,11 @@ RunMode hash_string(string input)
 				output = MODE_HELP;
 			} else if (converter == "list") {
 				output = MODE_LIST;
-			} else if (converter == "digest") {
+			}
+			else if (converter == "digest") {
 				output = MODE_DIGEST;
+			} else if (converter == "compile") {
+				output = MODE_COMPILE;
 			} else {
 				if (converter == "NO_PARAM") {
 					output = ERROR_NO_PARAM;
