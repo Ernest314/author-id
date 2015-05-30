@@ -13,21 +13,21 @@ void digest_input(string filename)
 	string author_name;
 	getline(file_text, author_name);
 	string filename_author = "Authors/" + author_name + ".csv";
-	int pos_filename = (filename.end() - 4) - filename.begin();
-	string filename_summary = filename;
-	filename_summary.insert(pos_filename, "-SUM");
+	string filename_summary = create_filename("Digests/", filename, "-SUM.txt");
 	fstream file_summary(filename_summary, ios::in | ios::out);
-	string filename_words(filename.begin(), filename.end()-4);
-	filename_words += "-FREQ.csv";
+	string filename_words = create_filename("Digests/", filename, "-WORD.csv");
 	fstream file_words(filename_words, ios::in | ios::out);
+	string filename_sentences = create_filename("Digests/", filename, "-SENT.csv");
+	fstream file_sentences(filename_sentences, ios::in | ios::out);
 	cout << "Author: " << author_name << endl << endl;
-	cout << "Output: " << filename + "-SUM.txt" << endl << endl;
+	cout << "Output: " << filename + "-SUM.txt" << endl <<
+		"        " << filename + "-WORD.csv" << endl <<
+		"        " << filename + "-SENT.csv" << endl << endl;
 
-	vector<Word> word_list;	// Working list of words held in memory.
+	Memory RAM;
 	string raw_input;
-	std::regex regex_word("([a-zA-z·ÈÌÛ˙Ò¡…Õ”⁄—'í]+)");
 	while (getline(file_text, raw_input)) {
-		add_words_from_line(word_list, raw_input, regex_word);
+		add_data_from_line(RAM, raw_input);
 		// TODO: Make constants settable via command-line options (i.e. 10000, 3000)
 		if (word_list.size() > 10000) {
 			cout << "Flushing buffer..." << endl << endl;
@@ -51,6 +51,28 @@ void digest_input(string filename)
 }
 
 
+
+bool file_check_create(string filename)
+{
+	bool didExist = false;
+	ifstream f_check(filename);
+	didExist = f_check.good();
+	f_check.close();
+	if (!didExist) {
+		ofstream f_create(filename);
+		f_create << endl;
+		f_create.close();
+	}
+	return didExist;
+}
+
+string create_file(string prepend, string main, string append)
+{
+	string output(main.begin(), main.end() - 4);
+	output = prepend + output + append;
+	file_check_create(output);
+	return output;
+}
 
 string to_lower_case(string input)
 {
@@ -135,14 +157,37 @@ void update_word(vector<Word>& list, string word)
 	}
 }
 
-void add_words_from_line(vector<Word>& list, string line, std::regex regex)
+void add_data_from_line(Memory& mem, string line)
 {
-	std::sregex_iterator find(line.begin(), line.end(), regex);
-	for (std::sregex_iterator find_end; find != find_end; find++) {
-		std::smatch match_word = *find;
+	regex regex_word("([a-zA-z·ÈÌÛ˙Ò¡…Õ”⁄—'í]+)");
+	vector<regex> regex_punc = {
+		regex("(.)"),
+		regex("(,)"),
+		regex("(;)"),
+		regex("(:)"),
+		regex("(!)"),
+		regex("(?)"),
+		regex("((?:[-ñó]\s*){1,2})"),
+		regex("(Ö|(?:\.\s*){3})")
+	};
+	regex regex_end_sentence("(?:([^\.!?Ö]+)(?:(?:\.\s*){3}|[\.!?Ö]))*([^\.!?Ö]+)\n");
+	std::sregex_iterator find_word(line.begin(), line.end(), regex_word);
+	for (std::sregex_iterator find_end; find_word != find_end; find_word++) {
+		std::smatch match_word = *find_word;
 		string word_found = match_word.str();
 		word_found = to_lower_case(word_found);
-		update_word(list, word_found);
+		update_word(mem.word_list, word_found);
+	}
+	for (int i = 0; i < PUNC_NUM; ++i) {
+		std::sregex_iterator find_punc(line.begin(), line.end(), regex_punc[i]);
+		mem.punc_freq[i] += std::distance(find_punc, std::sregex_iterator());
+	}
+	std::sregex_iterator find_sentence(line.begin(), line.end(), regex_end_sentence);
+	for (std::sregex_iterator find_end; find_sentence != find_end; find_sentence++) {
+		std::smatch match_sentence = *find_sentence;
+		string sentence_found = match_sentence.str();
+		std::sregex_iterator count_words(sentence_found.begin(), sentence_found.end(), regex_word);
+		mem. += std::distance(find_sentence, std::sregex_iterator());
 	}
 }
 
