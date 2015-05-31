@@ -1,17 +1,8 @@
 #include "stdafx.h"
-#include <vector>
-#include <string>
-#include <iostream>
-#include <fstream>
 
 #include "utils.h"
 #include "digest.h"
 #include "compile.h"
-
-using std::cout;
-using std::endl;
-using std::cin;
-using std::string;
 
 RunMode hash_string(string input);
 

@@ -5,13 +5,16 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
+#include <iostream>
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <regex>
 
 using std::vector;
+using std::cout;
 using std::endl;
+using std::cin;
 using std::string;
 using std::regex;
 using std::sregex_iterator;
