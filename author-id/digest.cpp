@@ -124,6 +124,29 @@ void write_summary(string filename, Memory* mem, string author_name)
 	}
 	double sentence_diff_rms = sqrt(sentence_diff_total);
 
+	// Contraction ratio
+	int freq_cntrct = 0;
+	vector<string> words_cntrct{	"ain’t",	"won’t",	"let’s",	"ain’t",
+									"can’t",	"couldn’t",	"shouldn’t","wouldn’t",
+									"haven’t",	"hasn’t",	"hadn’t",	"aren’t",
+									"could’ve",	"should’ve","would’ve",	"might’ve",
+									"he’d",		"she’d",	"i’d",		"they’d",
+									"it’d",		"you’d",	"we’d",		"i’ll",
+									"you’ll",	"she’ll",	"he’ll",	"they’ll",
+									"it’ll",	"we’ll",	"i’ve",		"you’ve",
+									"it’s",		"that’ll",	"there’ll",	"what’ll",
+									"don’t",	"doesn’t",	"didn’t",	"wasn’t",
+									"we’re",	"they’re",	"’twas",	"’ere",
+									"e’er",		"ne’er",	"o’er",		"who’ll",
+									"hadn’t",	"hasn’t",	"haven’t",	};
+	for (int i = 0; i < word_list_size; ++i) {
+		string word_read = mem->word_list[i].text;
+		if (does_word_match_list(word_read, words_cntrct)) {
+			freq_cntrct += mem->word_list[i].freq;
+		}
+	}
+	double cntrct_ratio = static_cast<double>(freq_cntrct) / word_count;
+
 	// Gender ratio (M-F)
 	int freq_M = 0;
 	int freq_F = 0;
@@ -197,7 +220,7 @@ void write_summary(string filename, Memory* mem, string author_name)
 	file_summary << "sentence len, µ:\t" << sentence_len_avg << endl;
 	file_summary << "sentence len, s:\t" << sentence_len_dev << endl << endl;
 	file_summary << "sentence uniformity, rms:\t" << sentence_diff_rms << endl << endl;
-	file_summary << "contraction ratio:\t\t" << endl << endl;
+	file_summary << "contraction ratio:\t\t" << freq_cntrct << endl << endl;
 	file_summary << "gender ratio (M-F):\t\t" << M_F_ratio << endl << endl;
 	file_summary << "gender count (N=M+F):\t\t" << freq_M + freq_F << endl << endl;
 	file_summary << "negation ratio:\t\t\t" << neg_ratio << endl << endl;
