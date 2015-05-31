@@ -5,6 +5,7 @@
 #include <fstream>
 
 #include "digest.h"
+#include "compile.h"
 
 using std::cout;
 using std::endl;
@@ -133,6 +134,27 @@ int main(int argc, char* argv[])
 				}
 				break;
 			case MODE_COMPILE :
+				erase_num = 2;
+				// WARNING: If there aren't enough parameters, breaks out of switch immediately.
+				// Also breaks out of switch immediately if filename extension is not ".txt".
+				if (args.size() < 2) {
+					// then size() must be 1, since it is also >0
+					erase_num = 1;
+					args.push_back("--NO_PARAM");
+					break;
+				} else {
+					string filename_compile_input = args[1];
+					string buf(filename_compile_input,
+						filename_compile_input.size() - 4,
+						filename_compile_input.size());
+					if (buf != ".txt") {
+						erase_num = 1;
+						args[1] = "--NOT_TXT";
+						break;
+					} else {
+						compile_input(filename_compile_input);
+					}
+				}
 				break;
 			default :
 				break;

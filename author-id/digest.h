@@ -1,6 +1,8 @@
 #ifndef DIGEST_H
 #define DIGEST_H
 
+#include "utils.h"
+
 #include <cmath>
 #include <vector>
 #include <iterator>

@@ -251,7 +251,7 @@ void write_summary(string filename, Memory* mem, string author_name)
 	file_summary << "sentence len, s:\t" << sentence_len_dev << endl << endl;
 	file_summary << "sentence uniformity, rms:\t" << sentence_diff_rms << endl << endl;
 	file_summary << "contraction ratio:\t\t" << cntrct_ratio << endl << endl;
-	file_summary << "gender ratio (M-F):\t\t" << M_F_ratio << endl << endl;
+	file_summary << "gender ratio (M-F):\t\t" << M_F_ratio << endl;
 	file_summary << "gender count (N=M+F):\t" << freq_M + freq_F << endl << endl;
 	file_summary << "negation ratio:\t\t\t" << neg_ratio << endl << endl;
 	file_summary << "modal verb ratio:\t\t" << modal_ratio << endl << endl;
