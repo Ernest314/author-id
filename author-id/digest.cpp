@@ -138,7 +138,8 @@ void write_summary(string filename, Memory* mem, string author_name)
 									"don’t",	"doesn’t",	"didn’t",	"wasn’t",
 									"we’re",	"they’re",	"’twas",	"’ere",
 									"e’er",		"ne’er",	"o’er",		"who’ll",
-									"hadn’t",	"hasn’t",	"haven’t",	};
+									"hadn’t",	"hasn’t",	"haven’t",	"i’m",
+									"ya’ll"		};
 	for (int i = 0; i < word_list_size; ++i) {
 		string word_read = mem->word_list[i].text;
 		if (does_word_match_list(word_read, words_cntrct)) {
@@ -195,6 +196,35 @@ void write_summary(string filename, Memory* mem, string author_name)
 	}
 	double modal_ratio = static_cast<double>(freq_modal) / word_count;
 
+	// PoV freq
+	int freq_1st = 0;
+	int freq_2nd = 0;
+	int freq_3rd = 0;
+	vector<string> words_1st{	"i",	"me",	"my",	"myself",	"mine",
+								"we",	"us",	"our",	"ourselves","ours",
+								"i’ll",	"i’m",	"i’d",	"we’ll",	"we’d",
+								"i’ve",	"we’ve"	};
+	vector<string> words_2nd{	"you",		"your",		"yourself",	"yours",
+								"you’ll",	"you’d",	"ya’ll",	"you’ve"	};
+	vector<string> words_3rd{	"he",		"him",		"his",		"himself",
+								"she",		"her",		"hers",		"herself",
+								"he’ll",	"he’d",		"they’ll",	"they’d",
+								"she’ll",	"she’d",	"it’ll",	"it’d",
+								"it",		"its",		"itself",	"themselves",
+								"they",		"them",		"their",	"theirs"	};
+	for (int i = 0; i < word_list_size; ++i) {
+		string word_read = mem->word_list[i].text;
+		if (does_word_match_list(word_read, words_1st)) {
+			freq_1st += mem->word_list[i].freq;
+		}
+		if (does_word_match_list(word_read, words_2nd)) {
+			freq_2nd += mem->word_list[i].freq;
+		}
+		if (does_word_match_list(word_read, words_3rd)) {
+			freq_3rd += mem->word_list[i].freq;
+		}
+	}
+
 	// Article ratio (def-indef)
 	int freq_indef = 0;
 	int freq_def = 0;
@@ -220,17 +250,17 @@ void write_summary(string filename, Memory* mem, string author_name)
 	file_summary << "sentence len, µ:\t" << sentence_len_avg << endl;
 	file_summary << "sentence len, s:\t" << sentence_len_dev << endl << endl;
 	file_summary << "sentence uniformity, rms:\t" << sentence_diff_rms << endl << endl;
-	file_summary << "contraction ratio:\t\t" << freq_cntrct << endl << endl;
+	file_summary << "contraction ratio:\t\t" << cntrct_ratio << endl << endl;
 	file_summary << "gender ratio (M-F):\t\t" << M_F_ratio << endl << endl;
-	file_summary << "gender count (N=M+F):\t\t" << freq_M + freq_F << endl << endl;
+	file_summary << "gender count (N=M+F):\t" << freq_M + freq_F << endl << endl;
 	file_summary << "negation ratio:\t\t\t" << neg_ratio << endl << endl;
 	file_summary << "modal verb ratio:\t\t" << modal_ratio << endl << endl;
 	file_summary << "article ratio (def-indef):\t" << article_ratio << endl << endl;
-	file_summary << "PoV freq:" << endl;
-	file_summary << "1st person:\t" << endl;
-	file_summary << "2nd person:\t" << endl;
-	file_summary << "3rd person:\t" << endl << endl;
-	file_summary << "punctuation freq table:" << endl;
+	file_summary << "PoV freq" << endl;
+	file_summary << "1st person:\t" << freq_1st << endl;
+	file_summary << "2nd person:\t" << freq_2nd << endl;
+	file_summary << "3rd person:\t" << freq_3rd << endl << endl;
+	file_summary << "punctuation freq table" << endl;
 	file_summary << "[.] " << mem->punc_freq[PUNC_PERIOD] << endl;
 	file_summary << "[,] " << mem->punc_freq[PUNC_COMMA] << endl;
 	file_summary << "[;] " << mem->punc_freq[PUNC_SEMICOLON] << endl;
