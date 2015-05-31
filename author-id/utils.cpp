@@ -63,3 +63,43 @@ string to_lower_case(string input)
 	}
 	return output;
 }
+
+void update_word(vector<Word>& list, string word)
+{
+	// If the word is already in memory, increment its count.
+	// If it isn't, add the word to the end of the list (with a count of 1).
+	bool doesExist = false;
+	for (auto itr = list.begin(); itr != list.end(); ++itr) {
+		if (word == itr->text) {
+			(itr->freq)++;
+			doesExist = true;
+			break;
+		}
+	}
+	if (!doesExist) {
+		list.push_back(Word(word, 1));
+	}
+}
+
+bool file_check_create(string filename)
+{
+	bool didExist = false;
+	ifstream f_check(filename);
+	didExist = f_check.good();
+	f_check.close();
+	if (didExist) {
+		remove(filename.c_str());
+	}
+	ofstream f_create(filename);
+	f_create << endl;
+	f_create.close();
+	return didExist;
+}
+
+string create_file_and_name(string prepend, string main, string append)
+{
+	string output(main.begin(), main.end() - 4);
+	output = prepend + output + append;
+	file_check_create(output);
+	return output;
+}

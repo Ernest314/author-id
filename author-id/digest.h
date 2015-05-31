@@ -27,10 +27,7 @@ using std::fstream;
 using std::ios;
 
 void write_summary(string filename, Memory* mem, string author_name);
-bool file_check_create(string filename);
-string create_filename(string prepend, string main, string append);
 void print_data_size(ifstream& stream);
-void update_word(vector<Word>& list, string word);
 void add_data_from_line(Memory& mem, string& line);
 void get_list_from_file(Memory& mem, string filename);
 void combine_list_file(Memory& mem, string filename);

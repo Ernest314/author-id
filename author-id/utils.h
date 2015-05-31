@@ -5,18 +5,13 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
-#include <iostream>
 #include <string>
-#include <sstream>
 #include <fstream>
 #include <regex>
 
 using std::vector;
-using std::cout;
 using std::endl;
-using std::cin;
 using std::string;
-using std::stringstream;
 using std::regex;
 using std::sregex_iterator;
 using std::ifstream;
@@ -69,7 +64,15 @@ struct Memory {
 };
 
 bool does_word_match_list(string word, vector<string> list);
+
 int get_word_count(string input);
+
 string to_lower_case(string input);	// Converts A-Z and { Á,É,Í,Ó,Ú,Ñ }
+
+void update_word(vector<Word>& list, string word);
+
+bool file_check_create(string filename);
+
+string create_file_and_name(string prepend, string main, string append);
 
 #endif // UTILS_H
