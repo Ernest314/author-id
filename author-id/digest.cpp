@@ -71,17 +71,6 @@ void digest_input(string filename)
 
 
 
-bool does_word_match_list(string word, vector<string> list) {
-	bool does_match = false;
-	for (unsigned int i = 0; i < list.size(); ++i) {
-		if (word == list[i]) {
-			does_match = true;
-			break;
-		}
-	}
-	return does_match;
-}
-
 void write_summary(string filename, Memory* mem, string author_name)
 {
 	// Word length mu and sigma
@@ -295,48 +284,6 @@ string create_filename(string prepend, string main, string append)
 	return output;
 }
 
-string to_lower_case(string input)
-{
-	string output;
-	for (unsigned int i = 0; i < input.length(); i++) {
-		if (input[i] >= 'A' && input[i] <= 'Z') {
-			output += input[i] - ('A'-'a'); // this trick works because ASCII :P
-		} else if (	input[i] == 'Á' ||
-					input[i] == 'É' ||
-					input[i] == 'Í' ||
-					input[i] == 'Ó' ||
-					input[i] == 'Ú' ||
-					input[i] == 'Ñ'		) {
-			// otherwise we must assign each character individually.
-			// Note: these are inside a single "else if" clause to optimize
-			// evaluation; doing this *should* reduce the number of branches.
-			switch (input[i]) {
-				case 'Á' :
-					output = 'á';
-					break;
-				case 'É':
-					output = 'é';
-					break;
-				case 'Í':
-					output = 'í';
-					break;
-				case 'Ó':
-					output = 'ó';
-					break;
-				case 'Ú':
-					output = 'ú';
-					break;
-				case 'Ñ':
-					output = 'ñ';
-					break;
-			}
-		} else {
-			output += input[i];
-		}
-	}
-	return output;
-}
-
 void print_data_size(ifstream& stream)
 {
 	// First, get file size in bytes:
@@ -371,14 +318,6 @@ void update_word(vector<Word>& list, string word)
 	}
 }
 
-int count_words(string input)
-{
-	regex regex_word("([a-zA-záéíóúñÁÉÍÓÚÑ'’]+)");
-	sregex_iterator find_word(input.begin(), input.end(), regex_word);
-	int count = std::distance(find_word, sregex_iterator());
-	return count;
-}
-
 void add_data_from_line(Memory& mem, string& line)
 {
 	regex regex_apostrophe("'");
@@ -409,7 +348,7 @@ void add_data_from_line(Memory& mem, string& line)
 	std::sregex_token_iterator split_line_cont(line.begin(), line.end(), regex_split_line, 2);
 	std::sregex_token_iterator split_line_xtra(line.begin(), line.end(), regex_split_line, 3);
 	string sentence_prev = *split_line_prev;
-	int sentence_prev_len = count_words(sentence_prev);
+	int sentence_prev_len = get_word_count(sentence_prev);
 	if (sentence_prev_len > 0) {
 		sentence_prev_len += mem.sentence_carry;
 		mem.sentence_len.push_back(sentence_prev_len);
@@ -420,12 +359,12 @@ void add_data_from_line(Memory& mem, string& line)
 	sregex_iterator find_sentence(sentence_cont.begin(), sentence_cont.end(), regex_split_sentence);
 	for (sregex_iterator find_end; find_sentence != find_end; ++find_sentence) {
 		string sentence_found = find_sentence->str();
-		int sentence_len = count_words(sentence_found);
+		int sentence_len = get_word_count(sentence_found);
 		mem.sentence_len.push_back(sentence_len);
 		mem.sentence_carry = 0;
 	}
 	string sentence_xtra = *split_line_xtra;
-	int sentence_xtra_len = count_words(sentence_xtra);
+	int sentence_xtra_len = get_word_count(sentence_xtra);
 	if (sentence_xtra_len > 0) {
 		mem.sentence_carry += sentence_xtra_len;
 	}
