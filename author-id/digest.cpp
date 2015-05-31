@@ -71,6 +71,17 @@ void digest_input(string filename)
 
 
 
+bool does_word_match_list(string word, vector<string> list) {
+	bool does_match = false;
+	for (unsigned int i = 0; i < list.size(); ++i) {
+		if (word == list[i]) {
+			does_match = true;
+			break;
+		}
+	}
+	return does_match;
+}
+
 void write_summary(string filename, Memory* mem, string author_name)
 {
 	// Word length mu and sigma
@@ -113,6 +124,54 @@ void write_summary(string filename, Memory* mem, string author_name)
 	}
 	double sentence_diff_rms = sqrt(sentence_diff_total);
 
+	// Gender ratio (M-F)
+	int freq_M = 0;
+	int freq_F = 0;
+	vector<string> words_M{ "he", "he’d", "he’ll", "he’s", "him", "himself", "his" };
+	vector<string> words_F{ "she", "she’d", "she’ll", "she’s", "her", "herself", "hers" };
+	for (int i = 0; i < word_list_size; ++i) {
+		string word_read = mem->word_list[i].text;
+		if (does_word_match_list(word_read, words_M)) {
+			freq_M += mem->word_list[i].freq;
+		}
+		if (does_word_match_list(word_read, words_F)) {
+			freq_F += mem->word_list[i].freq;
+		}
+	}
+	double M_F_ratio = static_cast<double>(freq_M) / static_cast<double>(freq_F);
+
+	// Negation ratio
+	int freq_neg = 0;
+	vector<string> words_neg {	"no",		"not",		"never",	"nothing",
+								"none",		"nobody",	"nowhere",	"neither",
+								"nor",		"cannot",	"ain’t",	"aren’t",
+								"can’t",	"couldn’t",	"didn’t",	"doesn’t",
+								"don’t",	"hadn’t",	"hasn’t",	"haven’t",
+								"isn’t",	"shouldn’t","wasn’t",	"weren’t",
+								"wouldn’t"	};
+	for (int i = 0; i < word_list_size; ++i) {
+		string word_read = mem->word_list[i].text;
+		if (does_word_match_list(word_read, words_neg)) {
+			freq_neg += mem->word_list[i].freq;
+		}
+	}
+	double neg_ratio = static_cast<double>(freq_neg) / word_count;
+
+	// Modal verb ratio
+	int freq_modal = 0;
+	vector<string> words_modal{ "can",		"can’t",	"could",	"couldn’t",
+								"cannot",	"shall",	"should",	"shouldn’t",
+								"will",		"would",	"wouldn’t",	"i’ll",
+								"he’ll",	"she’ll",	"you’ll",	"we’ll",
+								"it’ll",	"they’ll",	"that’ll"	};
+	for (int i = 0; i < word_list_size; ++i) {
+		string word_read = mem->word_list[i].text;
+		if (does_word_match_list(word_read, words_modal)) {
+			freq_modal += mem->word_list[i].freq;
+		}
+	}
+	double modal_ratio = static_cast<double>(freq_modal) / word_count;
+
 	// Article ratio (def-indef)
 	int freq_indef = 0;
 	int freq_def = 0;
@@ -131,15 +190,18 @@ void write_summary(string filename, Memory* mem, string author_name)
 
 	ofstream file_summary(filename);
 	file_summary << "Author: " << author_name << endl << endl;
+	file_summary << "words (N):\t\t\t" << word_count << endl;
 	file_summary << "word len, µ:\t\t" << word_len_avg << endl;
 	file_summary << "word len, s:\t\t" << word_len_dev << endl << endl;
+	file_summary << "sentences (N):\t\t" << sentence_count << endl;
 	file_summary << "sentence len, µ:\t" << sentence_len_avg << endl;
 	file_summary << "sentence len, s:\t" << sentence_len_dev << endl << endl;
-	file_summary << "contraction ratio:\t" << endl << endl;
 	file_summary << "sentence uniformity, rms:\t" << sentence_diff_rms << endl << endl;
-	file_summary << "gender ratio (M-F):\t\t" << endl << endl;
-	file_summary << "negation ratio:\t\t\t" << endl << endl;
-	file_summary << "modal verb ratio:\t\t" << endl << endl;
+	file_summary << "contraction ratio:\t\t" << endl << endl;
+	file_summary << "gender ratio (M-F):\t\t" << M_F_ratio << endl << endl;
+	file_summary << "gender count (N=M+F):\t\t" << freq_M + freq_F << endl << endl;
+	file_summary << "negation ratio:\t\t\t" << neg_ratio << endl << endl;
+	file_summary << "modal verb ratio:\t\t" << modal_ratio << endl << endl;
 	file_summary << "article ratio (def-indef):\t" << article_ratio << endl << endl;
 	file_summary << "PoV freq:" << endl;
 	file_summary << "1st person:\t" << endl;

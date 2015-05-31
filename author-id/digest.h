@@ -65,6 +65,7 @@ struct Memory {
 	{}
 };
 
+bool does_word_match_list(string word, vector<string> list);
 void write_summary(string filename, Memory* mem, string author_name);
 bool file_check_create(string filename);
 string create_filename(string prepend, string main, string append);
