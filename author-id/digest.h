@@ -1,11 +1,13 @@
 #ifndef DIGEST_H
 #define DIGEST_H
 
+#include <cmath>
 #include <vector>
 #include <iterator>
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <regex>
 
@@ -14,7 +16,9 @@ using std::cout;
 using std::endl;
 using std::cin;
 using std::string;
+using std::stringstream;
 using std::regex;
+using std::sregex_iterator;
 using std::ifstream;
 using std::ofstream;
 using std::fstream;
@@ -37,12 +41,10 @@ enum REGEX_PUNC {
 struct Word {
 	string text;
 	int freq;
-	bool isDLG;
 
-	Word(string text_in, int freq_in, bool isDLG_in) :
+	Word(string text_in, int freq_in) :
 		text(text_in),
-		freq(freq_in),
-		isDLG(isDLG_in)
+		freq(freq_in)
 	{}
 };
 struct word_compare {
@@ -52,29 +54,28 @@ struct word_compare {
 };
 
 struct Memory {
-	int total_words_nar;
-	int total_words_dlg;
+	int sentence_carry;
 	vector<Word> word_list;
 	vector<int> punc_freq;
 	vector<int> sentence_len;
-	int squared_dlg_dist_sum;
 
 	Memory() :
+		sentence_carry(0),
 		punc_freq(static_cast<int>(PUNC_NUM), 0)
 	{}
 };
 
+void write_summary(string filename, Memory* mem, string author_name);
 bool file_check_create(string filename);
 string create_filename(string prepend, string main, string append);
 string to_lower_case(string input);	// Converts A-Z and { Á,É,Í,Ó,Ú,Ñ }
 void print_data_size(ifstream& stream);
-void add_word_to_file(string filename, string word, int freq);
 void update_word(vector<Word>& list, string word);
-void add_data_from_line(Memory& mem, string line);
-void update_word_freq(string filename, string word, int freq);
-void combine_list_file(vector<Word>& list, fstream& stream, string filename);
-void combine_list_file(	vector<Word>& list,
-						fstream& stream,
+int count_words(string input);
+void add_data_from_line(Memory& mem, string& line);
+void get_list_from_file(Memory& mem, string filename);
+void combine_list_file(Memory& mem, string filename);
+void combine_list_file(	vector<Word>& mem,
 						string filename,
 						vector<Word>::iterator itr_beg,
 						vector<Word>::iterator itr_end	);

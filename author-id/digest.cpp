@@ -14,11 +14,8 @@ void digest_input(string filename)
 	getline(file_text, author_name);
 	string filename_author = "Authors/" + author_name + ".csv";
 	string filename_summary = create_filename("Digests/", filename, "-SUM.txt");
-	fstream file_summary(filename_summary, ios::in | ios::out);
 	string filename_words = create_filename("Digests/", filename, "-WORD.csv");
-	fstream file_words(filename_words, ios::in | ios::out);
 	string filename_sentences = create_filename("Digests/", filename, "-SENT.csv");
-	fstream file_sentences(filename_sentences, ios::in | ios::out);
 	cout << "Author: " << author_name << endl << endl;
 	cout << "Output: " << filename + "-SUM.txt" << endl <<
 		"        " << filename + "-WORD.csv" << endl <<
@@ -26,31 +23,139 @@ void digest_input(string filename)
 
 	Memory RAM;
 	string raw_input;
-	while (getline(file_text, raw_input)) {
+	cout << "Parsing text";
+	for (int i = 0; getline(file_text, raw_input); ++i) {
 		add_data_from_line(RAM, raw_input);
 		// TODO: Make constants settable via command-line options (i.e. 10000, 3000)
-		if (word_list.size() > 10000) {
+		if (RAM.word_list.size() > 10000) {
 			cout << "Flushing buffer..." << endl << endl;
-			combine_list_file(	word_list,
-								file_words,
-								filename_author,
-								word_list.begin() + 3000,
-								word_list.end()		);
+			combine_list_file(	RAM.word_list,
+								filename_words,
+								RAM.word_list.begin() + 3000,
+								RAM.word_list.end()	);
+		}
+		if (i % 1000 == 0) {
+			int cycle = (i / 1000) % 4;
+			switch (cycle) {
+				case 0 :
+				case 1 :
+				case 2 :
+					cout << ".";
+					break;
+				case 3 :
+					cout << '\b' << '\b' << '\b';
+					cout << "   "; // 3 spaces
+					cout << '\b' << '\b' << '\b';
+					break;
+			}
 		}
 	}
+	cout << endl << endl;
 
 	// Final write:
-	cout << "Writing frequency file..." << endl << endl;
-	std::sort(word_list.begin(), word_list.end(), word_compare());
-	combine_list_file(word_list, file_words, filename_author);
-	file_words.close();
-
-	// TODO: Sort
+	cout << "Writing frequency files..." << endl << endl;
+	std::sort(RAM.word_list.begin(), RAM.word_list.end(), word_compare());
+	combine_list_file(RAM, filename_words);
+	get_list_from_file(RAM, filename_words);
+	ofstream file_sentences(filename_sentences);
+	file_sentences << "WORDS" << endl;
+	for (unsigned int i = 0; i < RAM.sentence_len.size(); ++i) {
+		file_sentences << RAM.sentence_len[i] << endl;
+	}
+	file_sentences.close();
+	cout << "Writing summary file..." << endl << endl;
+	write_summary(filename_summary, &RAM, author_name);
 
 	cout << endl << "Done!" << endl;
 }
 
 
+
+void write_summary(string filename, Memory* mem, string author_name)
+{
+	// Word length mu and sigma
+	int word_list_size = mem->word_list.size();
+	double word_count = 0;
+	double total_letters = 0;
+	for (int i = 0; i < word_list_size; ++i) {
+		int word_freq = mem->word_list[i].freq;
+		word_count += word_freq;
+		int word_len = mem->word_list[i].text.size();
+		total_letters += static_cast<double>(word_len)* word_freq;
+	}
+	double word_len_avg = total_letters / word_count;
+	double word_total_error = 0;
+	for (int i = 0; i < word_list_size; ++i) {
+		double error = mem->word_list[i].text.size() - word_len_avg;
+		word_total_error += error * error * mem->word_list[i].freq;
+	}
+	double word_len_dev = sqrt(word_total_error / word_count);
+
+	// Sentence length mu and sigma
+	int sentence_count = mem->sentence_len.size();
+	double sentence_total_words = 0;
+	for (int i = 0; i < sentence_count; ++i) {
+		sentence_total_words += mem->sentence_len[i];
+	}
+	double sentence_len_avg = sentence_total_words / static_cast<double>(sentence_count);
+	double sentence_total_error = 0;
+	for (int i = 0; i < sentence_count; ++i) {
+		double error = mem->sentence_len[i] - sentence_len_avg;
+		sentence_total_error += error * error;
+	}
+	double sentence_len_dev = sqrt(sentence_total_error/sentence_count);
+
+	// Sentence uniformity
+	double sentence_diff_total = 0;
+	for (int i = 1; i < sentence_count; ++i) {
+		int diff = mem->sentence_len[i] - mem->sentence_len[i - 1];
+		sentence_diff_total += diff * diff / static_cast<double>(sentence_count);
+	}
+	double sentence_diff_rms = sqrt(sentence_diff_total);
+
+	// Article ratio (def-indef)
+	int freq_indef = 0;
+	int freq_def = 0;
+	for (int i = 0; i < word_count; ++i) {
+		string word_read = mem->word_list[i].text;
+		if (word_read == "the") {
+			freq_indef = mem->word_list[i].freq;
+		} else if (word_read == "a") {
+			freq_def = mem->word_list[i].freq;
+		}
+		if (freq_def * freq_indef != 0) {
+			break;
+		}
+	}
+	float article_ratio = static_cast<float>(freq_def) / static_cast<float>(freq_indef);
+
+	ofstream file_summary(filename);
+	file_summary << "Author: " << author_name << endl << endl;
+	file_summary << "word len, µ:\t\t" << word_len_avg << endl;
+	file_summary << "word len, s:\t\t" << word_len_dev << endl << endl;
+	file_summary << "sentence len, µ:\t" << sentence_len_avg << endl;
+	file_summary << "sentence len, s:\t" << sentence_len_dev << endl << endl;
+	file_summary << "contraction ratio:\t" << endl << endl;
+	file_summary << "sentence uniformity, rms:\t" << sentence_diff_rms << endl << endl;
+	file_summary << "gender ratio (M-F):\t\t" << endl << endl;
+	file_summary << "negation ratio:\t\t\t" << endl << endl;
+	file_summary << "modal verb ratio:\t\t" << endl << endl;
+	file_summary << "article ratio (def-indef):\t" << article_ratio << endl << endl;
+	file_summary << "PoV freq:" << endl;
+	file_summary << "1st person:\t" << endl;
+	file_summary << "2nd person:\t" << endl;
+	file_summary << "3rd person:\t" << endl << endl;
+	file_summary << "punctuation freq table:" << endl;
+	file_summary << "[.] " << mem->punc_freq[PUNC_PERIOD] << endl;
+	file_summary << "[,] " << mem->punc_freq[PUNC_COMMA] << endl;
+	file_summary << "[;] " << mem->punc_freq[PUNC_SEMICOLON] << endl;
+	file_summary << "[:] " << mem->punc_freq[PUNC_COLON] << endl;
+	file_summary << "[!] " << mem->punc_freq[PUNC_EXCLAMATION] << endl;
+	file_summary << "[?] " << mem->punc_freq[PUNC_QUESTION] << endl;
+	file_summary << "[ó] " << mem->punc_freq[PUNC_DASH] << endl;
+	file_summary << "[Ö] " << mem->punc_freq[PUNC_ELLIPSIS] << endl;
+	file_summary.close();
+}
 
 bool file_check_create(string filename)
 {
@@ -58,15 +163,16 @@ bool file_check_create(string filename)
 	ifstream f_check(filename);
 	didExist = f_check.good();
 	f_check.close();
-	if (!didExist) {
-		ofstream f_create(filename);
-		f_create << endl;
-		f_create.close();
+	if (didExist) {
+		remove(filename.c_str());
 	}
+	ofstream f_create(filename);
+	f_create << endl;
+	f_create.close();
 	return didExist;
 }
 
-string create_file(string prepend, string main, string append)
+string create_filename(string prepend, string main, string append)
 {
 	string output(main.begin(), main.end() - 4);
 	output = prepend + output + append;
@@ -133,13 +239,6 @@ void print_data_size(ifstream& stream)
 	cout << "(Approximately " << word_num << " words.)" << endl << endl;
 }
 
-void add_word_to_file(string filename, string word, int freq)
-{
-	ofstream file_updated(filename, ios::app);
-	file_updated << word << "," << freq << endl;
-	file_updated.close();
-}
-
 void update_word(vector<Word>& list, string word)
 {
 	// If the word is already in memory, increment its count.
@@ -157,102 +256,136 @@ void update_word(vector<Word>& list, string word)
 	}
 }
 
-void add_data_from_line(Memory& mem, string line)
+int count_words(string input)
 {
 	regex regex_word("([a-zA-z·ÈÌÛ˙Ò¡…Õ”⁄—'í]+)");
-	vector<regex> regex_punc = {
-		regex("(.)"),
-		regex("(,)"),
-		regex("(;)"),
-		regex("(:)"),
-		regex("(!)"),
-		regex("(?)"),
-		regex("((?:[-ñó]\s*){1,2})"),
-		regex("(Ö|(?:\.\s*){3})")
-	};
-	regex regex_end_sentence("(?:([^\.!?Ö]+)(?:(?:\.\s*){3}|[\.!?Ö]))*([^\.!?Ö]+)\n");
-	std::sregex_iterator find_word(line.begin(), line.end(), regex_word);
-	for (std::sregex_iterator find_end; find_word != find_end; find_word++) {
-		std::smatch match_word = *find_word;
-		string word_found = match_word.str();
+	sregex_iterator find_word(input.begin(), input.end(), regex_word);
+	int count = std::distance(find_word, sregex_iterator());
+	return count;
+}
+
+void add_data_from_line(Memory& mem, string& line)
+{
+	regex regex_apostrophe("'");
+	std::regex_replace(line, regex_apostrophe, "í");
+	regex regex_word("([a-zA-z·ÈÌÛ˙Ò¡…Õ”⁄—'í]+)");
+	sregex_iterator find_word(line.begin(), line.end(), regex_word);
+	for (sregex_iterator find_end; find_word != find_end; ++find_word) {
+		string word_found = find_word->str();
 		word_found = to_lower_case(word_found);
 		update_word(mem.word_list, word_found);
 	}
+	vector<regex> regex_punc = {
+		regex("\\."),
+		regex(","),
+		regex(";"),
+		regex(":"),
+		regex("!"),
+		regex("\\?"),
+		regex("(?:[-ñó]\\s*){1,2}"),
+		regex("Ö|(?:\\.\\s*){3}")
+	};
 	for (int i = 0; i < PUNC_NUM; ++i) {
-		std::sregex_iterator find_punc(line.begin(), line.end(), regex_punc[i]);
-		mem.punc_freq[i] += std::distance(find_punc, std::sregex_iterator());
+		sregex_iterator find_punc(line.begin(), line.end(), regex_punc[i]);
+		mem.punc_freq[i] += std::distance(find_punc, sregex_iterator());
 	}
-	std::sregex_iterator find_sentence(line.begin(), line.end(), regex_end_sentence);
-	for (std::sregex_iterator find_end; find_sentence != find_end; find_sentence++) {
-		std::smatch match_sentence = *find_sentence;
-		string sentence_found = match_sentence.str();
-		std::sregex_iterator count_words(sentence_found.begin(), sentence_found.end(), regex_word);
-		mem. += std::distance(find_sentence, std::sregex_iterator());
+	regex regex_split_line("^([^.!?Ö]*[.!?Ö])?((?:[^.!?Ö]*[.!?Ö])*?)([^.!?Ö]*)$");
+	std::sregex_token_iterator split_line_prev(line.begin(), line.end(), regex_split_line, 1);
+	std::sregex_token_iterator split_line_cont(line.begin(), line.end(), regex_split_line, 2);
+	std::sregex_token_iterator split_line_xtra(line.begin(), line.end(), regex_split_line, 3);
+	string sentence_prev = *split_line_prev;
+	int sentence_prev_len = count_words(sentence_prev);
+	if (sentence_prev_len > 0) {
+		sentence_prev_len += mem.sentence_carry;
+		mem.sentence_len.push_back(sentence_prev_len);
+		mem.sentence_carry = 0;
+	}
+	string sentence_cont = *split_line_cont;
+	regex regex_split_sentence("([^\\.!?Ö]*)[\\.!?Ö]");
+	sregex_iterator find_sentence(sentence_cont.begin(), sentence_cont.end(), regex_split_sentence);
+	for (sregex_iterator find_end; find_sentence != find_end; ++find_sentence) {
+		string sentence_found = find_sentence->str();
+		int sentence_len = count_words(sentence_found);
+		mem.sentence_len.push_back(sentence_len);
+		mem.sentence_carry = 0;
+	}
+	string sentence_xtra = *split_line_xtra;
+	int sentence_xtra_len = count_words(sentence_xtra);
+	if (sentence_xtra_len > 0) {
+		mem.sentence_carry += sentence_xtra_len;
 	}
 }
 
-void update_word_freq(string filename, string word, int freq)
+void get_list_from_file(Memory& mem, string filename)
 {
-	// To replace a line we must write an entirely new file,
-	// then rename it and replace the old one.
-	string filename_temp = "Authors/tmp.csv";
-	ofstream file_updated(filename_temp);
+	mem.word_list.clear();
 	ifstream file_read(filename);
-
-	string buffer; // swap buffer
-	getline(file_read, buffer); // First line should be "WORD,FREQ"
-	file_updated << buffer << endl;
-	while (getline(file_read, buffer, ',')) {
-		file_updated << buffer << ",";
-		getline(file_read, buffer); // continues getline until '\n', i.e. gets freq
-		// Now write the correct freq:
-		if (buffer != word) {
-			file_updated << buffer;
-		} else {
-			file_updated << freq;
+	string buffer;
+	getline(file_read, buffer);
+	while (getline(file_read, buffer)) {
+		if (buffer.length() > 0) {
+			stringstream converter(buffer);
+			string word_read;
+			getline(converter, word_read, ',');
+			getline(converter, buffer);
+			int freq_read = std::stoi(buffer);
+			mem.word_list.push_back(Word(word_read, freq_read));
 		}
-		file_updated << endl;
 	}
-	file_updated.close();
-
-	// Delete old file, rename new one, and open fstream for I/O again.
-	remove(filename.c_str());
-	rename(filename_temp.c_str(), filename.c_str());
+	file_read.close();
 }
 
-void combine_list_file(vector<Word>& list, fstream& stream, string filename)
+void combine_list_file(Memory& mem, string filename)
 {
-	combine_list_file(list, stream, filename, list.begin(), list.end());
+	combine_list_file(mem.word_list, filename, mem.word_list.begin(), mem.word_list.end());
 }
 
 void combine_list_file(	vector<Word>& list,
-						fstream& stream,
 						string filename,
 						vector<Word>::iterator itr_beg,
 						vector<Word>::iterator itr_end)
 {
-	std::sort(list.begin(), list.end(), word_compare());
-	for (auto itr = itr_beg; itr != itr_end; ++itr) {
-		stream.seekg(0, ios::beg);
-		string buffer; // to dump the first line into, for converting string to char, and rewriting file
-		getline(stream, buffer);
+	string filename_temp = "Digests/temp.dat";
+	ifstream file_read(filename);
+	vector<Word> list_read;
 
+	string buffer;
+	getline(file_read, buffer);
+	while (getline(file_read, buffer)) {
+		if (buffer.length() > 0) {
+			stringstream converter(buffer);
+			string word_read;
+			getline(converter, word_read, ',');
+			getline(converter, buffer);
+			int freq_read = std::stoi(buffer);
+			list_read.push_back(Word(word_read, freq_read));
+		}
+	}
+	file_read.close();
+
+	for (auto itr_list = itr_beg; itr_list != itr_end; ++itr_list) {
 		bool wordExists = false;
-		string word_existing;
-		while (getline(stream, word_existing, ',')) {
-			getline(stream, buffer);
-			if (itr->text == word_existing) {
+		for (auto itr_file = list_read.begin(); itr_file != list_read.end(); ++itr_file) {
+			if (itr_list->text == itr_file->text) {
+				itr_file->freq += itr_list->freq;
 				wordExists = true;
-				int freq_new = std::stoi(buffer) + itr->freq;
-				update_word_freq(filename, word_existing, freq_new);
 				break;
 			}
 		}
 		if (!wordExists) {
-			stream.close();
-			add_word_to_file(filename, itr->text, itr->freq);
-			stream.open(filename, ios::in | ios::out);
+			list_read.push_back(Word(itr_list->text, itr_list->freq));
 		}
 	}
 	list.erase(itr_beg, itr_end);
+
+	std::sort(list_read.begin(), list_read.end(), word_compare());
+	ofstream file_updated(filename_temp);
+	file_updated << "WORD,FREQ" << endl;
+	for (auto itr = list_read.begin(); itr != list_read.end(); ++itr) {
+		file_updated << itr->text << "," << itr->freq << endl;
+	}
+	file_updated.close();
+
+	remove(filename.c_str());
+	rename(filename_temp.c_str(), filename.c_str());
 }
