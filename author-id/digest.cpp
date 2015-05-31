@@ -23,7 +23,10 @@ void digest_input(string filename)
 
 	Memory RAM;
 	string raw_input;
-	cout << "Parsing text";
+	cout << "Parsing text: |";
+	const int bar_width = 50;
+	for (int i = 0; i<bar_width; ++i) { cout << " "; }
+	cout << "|  0.00%";
 	for (int i = 0; getline(file_text, raw_input); ++i) {
 		add_data_from_line(RAM, raw_input);
 		// TODO: Make constants settable via command-line options (i.e. 10000, 3000)
@@ -34,23 +37,37 @@ void digest_input(string filename)
 								RAM.word_list.begin() + 3000,
 								RAM.word_list.end()	);
 		}
-		if (i % 1000 == 0) {
-			int cycle = (i / 1000) % 4;
-			switch (cycle) {
-				case 0 :
-				case 1 :
-				case 2 :
-					cout << ".";
-					break;
-				case 3 :
-					cout << '\b' << '\b' << '\b';
-					cout << "   "; // 3 spaces
-					cout << '\b' << '\b' << '\b';
-					break;
+		// Progress bar stuff:
+		if (i % 120 == 0) {
+			cout << "\b\b\b\b\b\b\b\b"; // "| ##.##%"
+			for (int i = 0; i < bar_width; ++i) { cout << "\b"; }
+			ifstream file_sizer(filename_input);
+			file_sizer.seekg(0, ios::end);
+			float size = static_cast<float>(file_sizer.tellg());
+			file_sizer.close();
+			float current = static_cast<float>(file_text.tellg());
+			float percentage = current / size * 100;
+			int chars_filled = static_cast<int>(floor(percentage/100.0*bar_width));
+			for (int i = 0; i < bar_width; ++i) {
+				if (i < chars_filled) {
+					cout << "#";
+				} else {
+					cout << " ";
+				}
 			}
+			std::streamsize precision_init = cout.precision();
+			int correct_precision = get_precision(5, percentage);
+			cout.precision(correct_precision);
+			std::streamsize width_init = cout.width();
+			cout << "| " << std::setw(5) << percentage << "%";
+			cout.precision(precision_init);
+			cout << std::setw(width_init);
 		}
 	}
-	cout << endl << endl;
+	cout << "\b\b\b\b\b\b\b\b"; // "| ##.##%"
+	for (int i = 0; i < bar_width; ++i) { cout << "\b"; }
+	for (int i = 0; i < bar_width; ++i) { cout << "#"; }
+	cout << "| -DONE-" << endl << endl;
 
 	// Final write:
 	cout << "Writing frequency files..." << endl << endl;

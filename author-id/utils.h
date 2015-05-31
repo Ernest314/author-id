@@ -6,6 +6,7 @@
 #include <iterator>
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -84,6 +85,8 @@ struct Memory {
 		punc_freq(static_cast<int>(PUNC_NUM), 0)
 	{}
 };
+
+int get_precision(int width, float input);
 
 bool does_word_match_list(string word, vector<string> list);
 

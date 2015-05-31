@@ -1,6 +1,23 @@
 #include "stdafx.h"
 #include "utils.h"
 
+int get_precision(int width, float input)
+{
+	int sig_figs = width - 1; // decimal point
+	int precision = sig_figs;
+	float comparer = 1.0f;
+	for (int i = 0; i < sig_figs-1; ++i) {
+		if (input < comparer) {
+			precision--;
+			comparer *= 0.1f;
+		}
+	}
+	if (precision < 0) {
+		precision = 0;
+	}
+	return precision;
+}
+
 bool does_word_match_list(string word, vector<string> list) {
 	bool does_match = false;
 	for (unsigned int i = 0; i < list.size(); ++i) {
