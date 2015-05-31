@@ -26,8 +26,7 @@ string to_lower_case(string input)
 	for (unsigned int i = 0; i < input.length(); i++) {
 		if (input[i] >= 'A' && input[i] <= 'Z') {
 			output += input[i] - ('A' - 'a'); // this trick works because ASCII :P
-		}
-		else if (input[i] == 'Á' ||
+		} else if (input[i] == 'Á' ||
 			input[i] == 'É' ||
 			input[i] == 'Í' ||
 			input[i] == 'Ó' ||
@@ -56,8 +55,7 @@ string to_lower_case(string input)
 				output = 'ñ';
 				break;
 			}
-		}
-		else {
+		} else {
 			output += input[i];
 		}
 	}
@@ -81,6 +79,25 @@ void update_word(vector<Word>& list, string word)
 	}
 }
 
+void get_list_from_file(vector<Word>&list, string filename)
+{
+	list.clear();
+	ifstream file_read(filename);
+	string buffer;
+	getline(file_read, buffer);
+	while (getline(file_read, buffer)) {
+		if (buffer.length() > 0) {
+			stringstream converter(buffer);
+			string word_read;
+			getline(converter, word_read, ',');
+			getline(converter, buffer);
+			int freq_read = std::stoi(buffer);
+			list.push_back(Word(word_read, freq_read));
+		}
+	}
+	file_read.close();
+}
+
 bool file_check_create(string filename)
 {
 	bool didExist = false;
@@ -102,4 +119,59 @@ string create_file_and_name(string prepend, string main, string append)
 	output = prepend + output + append;
 	file_check_create(output);
 	return output;
+}
+
+void combine_list_file(vector<Word>& list, string filename)
+{
+	combine_list_file(list, filename, list.begin(), list.end());
+}
+
+void combine_list_file(	vector<Word>& list,
+						string filename,
+						vector<Word>::iterator itr_beg,
+						vector<Word>::iterator itr_end)
+{
+	string filename_temp = "Digests/temp.dat";
+	ifstream file_read(filename);
+	vector<Word> list_read;
+
+	string buffer;
+	getline(file_read, buffer);
+	while (getline(file_read, buffer)) {
+		if (buffer.length() > 0) {
+			stringstream converter(buffer);
+			string word_read;
+			getline(converter, word_read, ',');
+			getline(converter, buffer);
+			int freq_read = std::stoi(buffer);
+			list_read.push_back(Word(word_read, freq_read));
+		}
+	}
+	file_read.close();
+
+	for (auto itr_list = itr_beg; itr_list != itr_end; ++itr_list) {
+		bool wordExists = false;
+		for (auto itr_file = list_read.begin(); itr_file != list_read.end(); ++itr_file) {
+			if (itr_list->text == itr_file->text) {
+				itr_file->freq += itr_list->freq;
+				wordExists = true;
+				break;
+			}
+		}
+		if (!wordExists) {
+			list_read.push_back(Word(itr_list->text, itr_list->freq));
+		}
+	}
+	list.erase(itr_beg, itr_end);
+
+	std::sort(list_read.begin(), list_read.end(), word_compare());
+	ofstream file_updated(filename_temp);
+	file_updated << "WORD,FREQ" << endl;
+	for (auto itr = list_read.begin(); itr != list_read.end(); ++itr) {
+		file_updated << itr->text << "," << itr->freq << endl;
+	}
+	file_updated.close();
+
+	remove(filename.c_str());
+	rename(filename_temp.c_str(), filename.c_str());
 }

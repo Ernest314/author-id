@@ -55,8 +55,8 @@ void digest_input(string filename)
 	// Final write:
 	cout << "Writing frequency files..." << endl << endl;
 	std::sort(RAM.word_list.begin(), RAM.word_list.end(), word_compare());
-	combine_list_file(RAM, filename_words);
-	get_list_from_file(RAM, filename_words);
+	combine_list_file(RAM.word_list, filename_words);
+	get_list_from_file(RAM.word_list, filename_words);
 	ofstream file_sentences(filename_sentences);
 	file_sentences << "WORDS" << endl;
 	for (unsigned int i = 0; i < RAM.sentence_len.size(); ++i) {
@@ -328,78 +328,4 @@ void add_data_from_line(Memory& mem, string& line)
 	if (sentence_xtra_len > 0) {
 		mem.sentence_carry += sentence_xtra_len;
 	}
-}
-
-void get_list_from_file(Memory& mem, string filename)
-{
-	mem.word_list.clear();
-	ifstream file_read(filename);
-	string buffer;
-	getline(file_read, buffer);
-	while (getline(file_read, buffer)) {
-		if (buffer.length() > 0) {
-			stringstream converter(buffer);
-			string word_read;
-			getline(converter, word_read, ',');
-			getline(converter, buffer);
-			int freq_read = std::stoi(buffer);
-			mem.word_list.push_back(Word(word_read, freq_read));
-		}
-	}
-	file_read.close();
-}
-
-void combine_list_file(Memory& mem, string filename)
-{
-	combine_list_file(mem.word_list, filename, mem.word_list.begin(), mem.word_list.end());
-}
-
-void combine_list_file(	vector<Word>& list,
-						string filename,
-						vector<Word>::iterator itr_beg,
-						vector<Word>::iterator itr_end)
-{
-	string filename_temp = "Digests/temp.dat";
-	ifstream file_read(filename);
-	vector<Word> list_read;
-
-	string buffer;
-	getline(file_read, buffer);
-	while (getline(file_read, buffer)) {
-		if (buffer.length() > 0) {
-			stringstream converter(buffer);
-			string word_read;
-			getline(converter, word_read, ',');
-			getline(converter, buffer);
-			int freq_read = std::stoi(buffer);
-			list_read.push_back(Word(word_read, freq_read));
-		}
-	}
-	file_read.close();
-
-	for (auto itr_list = itr_beg; itr_list != itr_end; ++itr_list) {
-		bool wordExists = false;
-		for (auto itr_file = list_read.begin(); itr_file != list_read.end(); ++itr_file) {
-			if (itr_list->text == itr_file->text) {
-				itr_file->freq += itr_list->freq;
-				wordExists = true;
-				break;
-			}
-		}
-		if (!wordExists) {
-			list_read.push_back(Word(itr_list->text, itr_list->freq));
-		}
-	}
-	list.erase(itr_beg, itr_end);
-
-	std::sort(list_read.begin(), list_read.end(), word_compare());
-	ofstream file_updated(filename_temp);
-	file_updated << "WORD,FREQ" << endl;
-	for (auto itr = list_read.begin(); itr != list_read.end(); ++itr) {
-		file_updated << itr->text << "," << itr->freq << endl;
-	}
-	file_updated.close();
-
-	remove(filename.c_str());
-	rename(filename_temp.c_str(), filename.c_str());
 }

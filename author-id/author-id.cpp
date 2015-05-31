@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "utils.h"
 #include "digest.h"
 #include "compile.h"
 
@@ -11,22 +12,6 @@ using std::cout;
 using std::endl;
 using std::cin;
 using std::string;
-
-enum RunMode {
-	ERROR_UNKNOWN	= -1,
-	ERROR_NO_ARG	= -2,
-	ERROR_BAD_ARG	= -3,
-	ERROR_NO_PARAM	= -4,
-	ERROR_BAD_PARAM	= -5,
-	ERROR_NOT_TXT	= -6,
-
-	MODE_ABOUT	= 0,
-	MODE_HELP,
-	MODE_LIST,
-	MODE_DIGEST,
-	MODE_COMPILE,
-	MODE_NUM
-};
 
 RunMode hash_string(string input);
 

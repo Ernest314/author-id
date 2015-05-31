@@ -6,6 +6,7 @@
 #include <iterator>
 #include <algorithm>
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <regex>
 
@@ -14,10 +15,28 @@ using std::endl;
 using std::string;
 using std::regex;
 using std::sregex_iterator;
+using std::stringstream;
 using std::ifstream;
 using std::ofstream;
 using std::fstream;
 using std::ios;
+
+// These are the return codes for the main .exe
+enum RunMode {
+	ERROR_UNKNOWN = -1,
+	ERROR_NO_ARG = -2,
+	ERROR_BAD_ARG = -3,
+	ERROR_NO_PARAM = -4,
+	ERROR_BAD_PARAM = -5,
+	ERROR_NOT_TXT = -6,
+
+	MODE_ABOUT = 0,
+	MODE_HELP,
+	MODE_LIST,
+	MODE_DIGEST,
+	MODE_COMPILE,
+	MODE_NUM
+};
 
 // This enum is used for referring to punctuation.
 enum REGEX_PUNC {
@@ -71,8 +90,17 @@ string to_lower_case(string input);	// Converts A-Z and { Á,É,Í,Ó,Ú,Ñ }
 
 void update_word(vector<Word>& list, string word);
 
+void get_list_from_file(vector<Word>& list, string filename);
+
 bool file_check_create(string filename);
 
 string create_file_and_name(string prepend, string main, string append);
+
+void combine_list_file(vector<Word>& list, string filename);
+
+void combine_list_file(	vector<Word>& mem,
+						string filename,
+						vector<Word>::iterator itr_beg,
+						vector<Word>::iterator itr_end	);
 
 #endif // UTILS_H

@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
-#include <sstream>
 #include <fstream>
 #include <regex>
 
@@ -18,7 +17,6 @@ using std::cout;
 using std::endl;
 using std::cin;
 using std::string;
-using std::stringstream;
 using std::regex;
 using std::sregex_iterator;
 using std::ifstream;
@@ -29,12 +27,6 @@ using std::ios;
 void write_summary(string filename, Memory* mem, string author_name);
 void print_data_size(ifstream& stream);
 void add_data_from_line(Memory& mem, string& line);
-void get_list_from_file(Memory& mem, string filename);
-void combine_list_file(Memory& mem, string filename);
-void combine_list_file(	vector<Word>& mem,
-						string filename,
-						vector<Word>::iterator itr_beg,
-						vector<Word>::iterator itr_end	);
 
 void digest_input(string filename);
 
