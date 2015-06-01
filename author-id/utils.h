@@ -99,6 +99,8 @@ void update_word(vector<Word>& list, string word);
 
 void get_list_from_file(vector<Word>& list, string filename);
 
+void get_sentences_from_file(vector<int>& list, string filename);
+
 bool file_check_create(string filename);
 
 string create_file_and_name(string prepend, string main, string append);

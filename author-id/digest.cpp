@@ -247,6 +247,7 @@ void write_summary(string filename, Memory* mem, string author_name)
 	}
 	float article_ratio = static_cast<float>(freq_def) / static_cast<float>(freq_indef);
 
+	remove(filename.c_str());
 	ofstream file_summary(filename);
 	file_summary << "Author: " << author_name << endl << endl;
 	file_summary << "words (N):\t\t\t" << word_count << endl;

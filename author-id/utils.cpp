@@ -96,7 +96,7 @@ void update_word(vector<Word>& list, string word)
 	}
 }
 
-void get_list_from_file(vector<Word>&list, string filename)
+void get_list_from_file(vector<Word>& list, string filename)
 {
 	list.clear();
 	ifstream file_read(filename);
@@ -110,6 +110,23 @@ void get_list_from_file(vector<Word>&list, string filename)
 			getline(converter, buffer);
 			int freq_read = std::stoi(buffer);
 			list.push_back(Word(word_read, freq_read));
+		}
+	}
+	file_read.close();
+}
+
+void get_sentences_from_file(vector<int>& list, string filename)
+{
+	list.clear();
+	ifstream file_read(filename);
+	string buffer;
+	getline(file_read, buffer); // discard first line ("WORDS")
+	while (getline(file_read, buffer)) {
+		if (buffer.length() > 0) {
+			string raw;
+			getline(file_read, raw);
+			int freq = std::stoi(raw);
+			list.push_back(freq);
 		}
 	}
 	file_read.close();
