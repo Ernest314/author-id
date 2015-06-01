@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "digest.h"
 #include "merge.h"
+#include "compare.h"
 
 RunMode hash_string(string input);
 
@@ -67,10 +68,13 @@ int main(int argc, char* argv[])
 				cout << "-l, --list\n" <<
 					"\tLists all authors for which there is data." << endl << endl;
 				cout << "-d, --digest filename.txt\n" <<
-					"\tDigests the specified file (in the \"Texts\" directory)." << endl << endl;
-				cout << "-c, --compile filename.txt\n" <<
-					"\tCompiles the listed file into its author's file. The file\n" <<
-					"\tmust be in the \"Texts\" directory." << endl << endl;
+					"\tDigests the specified file (from the \"Texts\" directory)." << endl << endl;
+				cout << "-m, --merge filename.txt\n" <<
+					"\tMerges the listed file into its author's file. The file\n" <<
+					"\tmust be from the \"Digests\" directory." << endl << endl;
+				cout << "-c, --compare author-A.txt author-B.txt\n" <<
+					"\tRearranges the lists of author-B to match author-A. The\n" <<
+					"\tfiles must both be in the \"Authors\" directory." << endl << endl;
 				cout << endl;
 				break;
 			case MODE_LIST :
@@ -119,16 +123,45 @@ int main(int argc, char* argv[])
 					args.push_back("--NO_PARAM");
 					break;
 				} else {
-					string filename_compile_input = args[1];
-					string buf(filename_compile_input,
-						filename_compile_input.size() - 4,
-						filename_compile_input.size());
+					string filename_merge_input = args[1];
+					string buf(filename_merge_input,
+						filename_merge_input.size() - 4,
+						filename_merge_input.size());
 					if (buf != ".txt") {
 						erase_num = 1;
 						args[1] = "--NOT_TXT";
 						break;
 					} else {
-						merge_input(filename_compile_input);
+						merge_input(filename_merge_input);
+					}
+				}
+				break;
+			case MODE_COMPARE :
+				erase_num = 3;
+				// WARNING: If there aren't enough parameters, breaks out of switch immediately.
+				// Also breaks out of switch immediately if filename extension is not ".txt".
+				if (args.size() < 3) {
+					// then size() must be 1, since it is also >0
+					erase_num = 1;
+					args.push_back("--NO_PARAM");
+					break;
+				}
+				else {
+					string filename_compare_input_A = args[1];
+					string filename_compare_input_B = args[2];
+					string buf_A(filename_compare_input_A,
+						filename_compare_input_A.size() - 4,
+						filename_compare_input_A.size());
+					string buf_B(filename_compare_input_B,
+						filename_compare_input_B.size() - 4,
+						filename_compare_input_B.size());
+					if (buf_A != ".txt" || buf_B != ".txt") {
+						erase_num = 1;
+						args[1] = "--NOT_TXT";
+						break;
+					}
+					else {
+						compare_input(filename_compare_input_A, filename_compare_input_B);
 					}
 				}
 				break;

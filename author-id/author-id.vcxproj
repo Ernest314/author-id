@@ -79,6 +79,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="compare.h" />
     <ClInclude Include="merge.h" />
     <ClInclude Include="digest.h" />
     <ClInclude Include="stdafx.h" />
@@ -87,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="author-id.cpp" />
+    <ClCompile Include="compare.cpp" />
     <ClCompile Include="merge.cpp" />
     <ClCompile Include="digest.cpp" />
     <ClCompile Include="stdafx.cpp">
