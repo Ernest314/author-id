@@ -31,11 +31,14 @@ void digest_input(string filename)
 		add_data_from_line(RAM, raw_input);
 		// TODO: Make constants settable via command-line options (i.e. 10000, 3000)
 		if (RAM.word_list.size() > 10000) {
-			cout << "Flushing buffer..." << endl << endl;
+			cout << endl << endl << "Flushing buffer..." << endl << endl;
 			combine_list_file(	RAM.word_list,
 								filename_words,
 								RAM.word_list.begin() + 3000,
 								RAM.word_list.end()	);
+			cout << "Parsing text: |";
+			for (int i = 0; i<bar_width; ++i) { cout << " "; }
+			cout << "|  0.00%";
 		}
 		// Progress bar stuff:
 		if (i % 120 == 0) {
