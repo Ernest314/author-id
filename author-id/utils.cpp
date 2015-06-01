@@ -101,7 +101,7 @@ void get_list_from_file(vector<Word>&list, string filename)
 	list.clear();
 	ifstream file_read(filename);
 	string buffer;
-	getline(file_read, buffer);
+	getline(file_read, buffer); // discard first line ("WORD,FREQ")
 	while (getline(file_read, buffer)) {
 		if (buffer.length() > 0) {
 			stringstream converter(buffer);

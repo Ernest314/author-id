@@ -13,6 +13,7 @@ void compile_input(string filename)
 	
 	ifstream file_sum(filename_sum);
 	string author_name = read_author(file_sum);
+	file_sum.close();
 	string filename_author_sum = "Authors/" + author_name + "-SUM.txt";
 	string filename_author_word = "Authors/" + author_name + "-WORD.csv";
 
@@ -20,70 +21,33 @@ void compile_input(string filename)
 		"\t" << filename_author_sum << endl <<
 		"\t" << filename_author_word << endl << endl;
 
-	ifstream file_author_sum(filename_author_sum);
-	read_author(file_author_sum);
-
-	string filename_temp = "temp.txt";
-	ofstream file_new(filename_temp);
-	file_new << "Author: " << author_name << endl << endl;
-
-	int word_N = read_word_N(file_sum);
-	int word_N_author = read_word_N(file_author_sum);
-	int word_N_new = word_N + word_N_author;
-	file_new << "words (N):\t\t\t" << word_N_new << endl;
-
-	double word_u = read_word_u(file_sum);
-	double word_u_author = read_word_u(file_author_sum);
-	double word_u_new = static_cast<double>(word_u * word_N + word_u_author * word_N_author) /
-		static_cast<double>(word_N_new);
-	file_new << "word len, µ:\t\t" << word_u_new << endl;
-
-	double word_s = read_word_s(file_sum);
-	double word_s_author = read_word_s(file_author_sum);
-	double word_v = word_s * word_s;
-	double word_v_author = word_s_author * word_s_author;
-	double word_v_new = static_cast<double>(word_v * word_N + word_v_author * word_N_author);
-	double word_s_new = sqrt(word_v_new);
-	file_new << "word len, s:\t\t" << word_s_new << endl;
+	Memory RAM_init;
+	get_list_from_file(RAM_init.word_list, filename_author_word);
+	Memory RAM_new;
+	get_list_from_file(RAM_new.word_list, filename_word);
+	for (auto itr = RAM_new.word_list.begin(); itr != RAM_new.word_list.end(); ++itr) {
+		bool wasFound = false;
+		for (auto jtr = RAM_init.word_list.begin(); jtr != RAM_init.word_list.end(); ++jtr) {
+			if (jtr->text == itr->text) {
+				jtr->freq += itr->freq;
+				wasFound = true;
+				break;
+			}
+		}
+		if (!wasFound) {
+			RAM_init.word_list.push_back(Word(itr->text, itr->freq));
+		}
+	}
+	std::sort(RAM_init.word_list.begin(), RAM_init.word_list.end(), word_compare());
 	
-	file_sum.close();
-	file_author_sum.close();
-	file_new.close();
-}
+	string filename_temp = "temp.dat";
+	ofstream file_temp(filename_temp);
+	file_temp << "WORD,FREQ" << endl;
+	for (auto itr = RAM_init.word_list.begin(); itr != RAM_init.word_list.end(); ++itr) {
+		file_temp << itr->text << "," << itr->freq << endl;
+	}
+	file_temp.close();
+	remove(filename_author_word.c_str());
+	rename(filename_temp.c_str(), filename_author_word.c_str());
 
-string strip_colon(ifstream& stream, int leading_chars)
-{
-	string buffer;
-	getline(stream, buffer, ':');
-	getline(stream, buffer);
-	return string(buffer.begin() + leading_chars, buffer.end());
-}
-
-string read_author(ifstream& stream)
-{
-	string buffer;
-	getline(stream, buffer, ':'); // discard  "Author:"
-	getline(stream, buffer);
-	return string(buffer.begin() + 1, buffer.end()); // discard leading " "
-}
-
-int read_word_N(ifstream& stream)
-{
-	string buffer;
-	getline(stream, buffer); // blank line
-	string raw = strip_colon(stream, 3); // discard "\t\t\t"
-	return std::atoi(raw.c_str());
-}
-
-double read_word_u(ifstream& stream)
-{
-	string buffer;
-	getline(stream, buffer, ':'); // discard "word len, µ:"
-	string raw = strip_colon(stream, 2); // discard "\t\t"
-	return std::atof(raw.c_str());
-}
-
-double read_word_s(ifstream& stream)
-{
-	return read_word_u(stream);
 }
