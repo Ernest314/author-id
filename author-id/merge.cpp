@@ -73,6 +73,8 @@ void merge_input(string filename)
 
 	// done
 	write_summary(filename_author_sum, &RAM_init, author_name);
+
+	cout << "Done!" << endl << endl << endl;
 }
 
 string read_author(ifstream& stream)
