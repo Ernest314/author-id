@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "compile.h"
+#include "merge.h"
 
-void compile_input(string filename)
+void merge_input(string filename)
 {
 	cout << "Processing started..." << endl << endl;
 	string filename_root(filename.begin(), filename.end()-4); // ".txt"
@@ -50,4 +50,12 @@ void compile_input(string filename)
 	remove(filename_author_word.c_str());
 	rename(filename_temp.c_str(), filename_author_word.c_str());
 
+}
+
+string read_author(ifstream& stream)
+{
+	string buffer;
+	getline(stream, buffer, ':'); // discard  "Author:"
+	getline(stream, buffer);
+	return string(buffer.begin() + 1, buffer.end()); // discard leading " "
 }

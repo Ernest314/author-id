@@ -27,10 +27,10 @@
     <ClInclude Include="digest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="compile.h">
+    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="utils.h">
+    <ClInclude Include="merge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -41,13 +41,13 @@
     <ClCompile Include="author-id.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="digest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="compile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="utils.cpp">
+    <ClCompile Include="merge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

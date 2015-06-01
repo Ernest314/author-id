@@ -2,7 +2,7 @@
 
 #include "utils.h"
 #include "digest.h"
-#include "compile.h"
+#include "merge.h"
 
 RunMode hash_string(string input);
 
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 					}
 				}
 				break;
-			case MODE_COMPILE :
+			case MODE_MERGE :
 				erase_num = 2;
 				// WARNING: If there aren't enough parameters, breaks out of switch immediately.
 				// Also breaks out of switch immediately if filename extension is not ".txt".
@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 						args[1] = "--NOT_TXT";
 						break;
 					} else {
-						compile_input(filename_compile_input);
+						merge_input(filename_compile_input);
 					}
 				}
 				break;
@@ -167,8 +167,11 @@ RunMode hash_string(string input)
 				case 'd':
 					output = MODE_DIGEST;
 					break;
-				case 'c' :
-					output = MODE_COMPILE;
+				case 'm' :
+					output = MODE_MERGE;
+					break;
+				case 'c':
+					output = MODE_COMPARE;
 					break;
 				default :
 					output = ERROR_BAD_ARG;
@@ -188,8 +191,10 @@ RunMode hash_string(string input)
 				output = MODE_LIST;
 			} else if (converter == "digest") {
 				output = MODE_DIGEST;
-			} else if (converter == "compile") {
-				output = MODE_COMPILE;
+			} else if (converter == "merge") {
+				output = MODE_MERGE;
+			} else if (converter == "compare") {
+				output = MODE_COMPARE;
 			} else {
 				if (converter == "NO_PARAM") {
 					output = ERROR_NO_PARAM;
