@@ -68,8 +68,8 @@ int main(int argc, char* argv[])
 					"\tLists all authors for which there is data." << endl << endl;
 				cout << "-d, --digest filename.txt\n" <<
 					"\tDigests the specified file (in the \"Texts\" directory)." << endl << endl;
-				cout << "-c, --compile file_A.txt [file_B.txt] [...]\n" <<
-					"\tCompiles the listed files into their author's file. The files\n" <<
+				cout << "-c, --compile filename.txt\n" <<
+					"\tCompiles the listed file into its author's file. The file\n" <<
 					"\tmust be in the \"Texts\" directory." << endl << endl;
 				cout << endl;
 				break;
@@ -186,8 +186,7 @@ RunMode hash_string(string input)
 				output = MODE_HELP;
 			} else if (converter == "list") {
 				output = MODE_LIST;
-			}
-			else if (converter == "digest") {
+			} else if (converter == "digest") {
 				output = MODE_DIGEST;
 			} else if (converter == "compile") {
 				output = MODE_COMPILE;
